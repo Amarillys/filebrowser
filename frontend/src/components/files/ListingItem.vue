@@ -12,11 +12,12 @@
   :data-dir="isDir"
   :aria-label="name"
   :aria-selected="isSelected">
-    <div>
-      <i class="material-icons">{{ icon }}</i>
+    <div class="thumb">
+      <i v-if="icon != 'insert_photo'" class="material-icons">{{ icon }}</i>
+      <img v-if="icon == 'insert_photo'" class="thumbnail" src="/static/img/image.svg" ref="thumb"/>
     </div>
 
-    <div>
+    <div class="iteminfo">
       <p class="name">{{ name }}</p>
 
       <p v-if="isDir" class="size" data-order="-1">&mdash;</p>
@@ -43,6 +44,15 @@ export default {
     }
   },
   props: ['name', 'isDir', 'url', 'type', 'size', 'modified', 'index'],
+  mounted() {
+    if (this.type !== 'image') return;
+    let url = `/static/img/${this.url.slice(7)}`;
+    fetch(url, { method: 'HEAD' }).then(response => {
+      if (response.status !== 404) {
+        this.$refs.thumb.src = url;
+      }
+    });
+  },
   computed: {
     ...mapState(['selected', 'req']),
     ...mapGetters(['selectedCount']),

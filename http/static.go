@@ -88,7 +88,7 @@ func getStaticHandlers(storage *storage.Storage, server *settings.Server) (http.
 	handler := http.FileServer(box.HTTPBox())
 
 	index := handle(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
-		if r.Method != http.MethodGet {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
 			return http.StatusNotFound, nil
 		}
 
@@ -97,7 +97,7 @@ func getStaticHandlers(storage *storage.Storage, server *settings.Server) (http.
 	}, "", storage, server)
 
 	static := handle(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
-		if r.Method != http.MethodGet {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
 			return http.StatusNotFound, nil
 		}
 
@@ -112,6 +112,11 @@ func getStaticHandlers(storage *storage.Storage, server *settings.Server) (http.
 				http.ServeFile(w, r, filepath.Join(d.settings.Branding.Files, "custom.css"))
 				return 0, nil
 			}
+		}
+
+		if r.URL.Path == "custom.js" && d.settings.Branding.Files != "" {
+			http.ServeFile(w, r, filepath.Join(d.settings.Branding.Files, "custom.js"))
+			return 0, nil
 		}
 
 		if !strings.HasSuffix(r.URL.Path, ".js") {
